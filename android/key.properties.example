@@ -1,0 +1,4 @@
+storePassword=REPLACE_ME
+keyPassword=REPLACE_ME
+keyAlias=vero
+storeFile=C:/caminho/para/vero-upload-key.jks
