@@ -111,7 +111,7 @@ class SupabaseAuthRepository implements AuthRepository {
     await backend.auth.verifyOTP(
       email: email,
       token: code,
-      type: recovery ? OtpType.recovery : OtpType.signup,
+      type: recovery ? OtpType.recovery : OtpType.email,
     );
   });
 
