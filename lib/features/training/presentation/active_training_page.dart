@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../../notifications/presentation/notification_controller.dart';
 import '../domain/exercise_library.dart';
 import '../domain/training_models.dart';
+import 'exercise_detail_page.dart';
+import 'exercise_providers.dart';
 import 'training_controller.dart';
 import 'training_widgets.dart';
 
@@ -228,10 +230,29 @@ class _ActiveTrainingPageState extends ConsumerState<ActiveTrainingPage> {
                             exerciseById(
                               exercise.exerciseId,
                               customExercises: data.customExercises,
+                              catalog:
+                                  ref
+                                      .watch(exerciseCatalogProvider)
+                                      .asData
+                                      ?.value ??
+                                  const <Exercicio>[],
                             ).name,
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              icon: const Icon(Icons.play_circle_outline),
+                              label: const Text('Ver execucao'),
+                              onPressed: () => openExerciseDetail(
+                                context,
+                                exercise,
+                                restSeconds: session.routine.restSeconds,
+                                returnToWorkout: true,
+                              ),
+                            ),
+                          ),
                           for (final (setIndex, set) in exercise.sets.indexed)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 12),

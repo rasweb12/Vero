@@ -9,6 +9,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   gtk
   isar_flutter_libs
   printing
+  rive_native
   url_launcher_linux
 )
 

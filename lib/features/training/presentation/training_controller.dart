@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/providers/local_database_provider.dart';
@@ -6,6 +8,7 @@ import '../../auth/presentation/auth_controller.dart';
 import '../data/training_repository.dart';
 import '../domain/exercise_library.dart';
 import '../domain/training_models.dart';
+import 'exercise_providers.dart';
 
 final trainingControllerProvider =
     StateNotifierProvider<TrainingController, AsyncValue<TrainingData>>((ref) {
@@ -17,14 +20,17 @@ final trainingControllerProvider =
           ref.watch(localDatabaseProvider),
           owner ?? 'signed-out',
         ),
+        loadCatalog: () => ref.read(exerciseCatalogProvider.future),
       );
     });
 
 class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
-  TrainingController(this.repository) : super(const AsyncLoading()) {
+  TrainingController(this.repository, {this.loadCatalog})
+    : super(const AsyncLoading()) {
     ready = reload();
   }
   final TrainingRepository repository;
+  final Future<List<Exercicio>> Function()? loadCatalog;
   late final Future<void> ready;
   Future<void> _pending = Future.value();
 
@@ -39,7 +45,7 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
 
   // Serialize rapid taps and commit state only after the encrypted write succeeds.
   Future<Result<void>> _change(
-    Result<TrainingData> Function(TrainingData) update,
+    FutureOr<Result<TrainingData>> Function(TrainingData) update,
   ) {
     final operation = _pending.then((_) async {
       await ready;
@@ -52,7 +58,7 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
           AppFailure(message: 'Aguarde o carregamento dos treinos.'),
         );
       }
-      final proposed = update(current);
+      final proposed = await update(current);
       if (proposed case Failure<TrainingData>(:final failure)) {
         return Failure<void>(failure);
       }
@@ -65,7 +71,17 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
     return operation;
   }
 
-  Future<Result<void>> saveRoutine(Treino routine) => _change((data) {
+  Future<Result<void>> saveRoutine(Treino routine) => _change((data) async {
+    final List<Exercicio> catalog;
+    try {
+      catalog = await loadCatalog?.call() ?? exerciseLibrary;
+    } on Object {
+      return const Failure(
+        AppFailure(
+          message: 'Nao foi possivel abrir a biblioteca. Tente novamente.',
+        ),
+      );
+    }
     if (routine.name.trim().isEmpty ||
         routine.name.length > 80 ||
         routine.exercises.isEmpty ||
@@ -79,7 +95,7 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
         routine.exercises.any(
           (exercise) =>
               ![
-                ...exerciseLibrary,
+                ...catalog,
                 ...data.customExercises,
               ].any((item) => item.id == exercise.exerciseId) ||
               exercise.sets.isEmpty ||

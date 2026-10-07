@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "exercises": [
+    {
+      "id": "incline-dumbbell", "name": "Supino inclinado com halteres", "muscle_group": "Peito", "type": "Halteres",
+      "description": "Deitado no banco inclinado, desca os halteres ao lado do peito e empurre-os de volta, com controle.",
+      "primary_muscle": "Peitoral maior (porcao clavicular)", "secondary_muscles": ["Triceps", "Deltoide anterior"],
+      "equipment": ["Halteres", "Banco inclinado"], "difficulty": "intermediate",
+      "instructions": ["Ajuste a inclinacao do banco para uma posicao confortavel, aproximadamente 30 a 45 graus.", "Sente-se e posicione os halteres com cuidado. Apoie as costas, a cabeca e os pes no chao.", "Mantenha as escapulas apoiadas e os punhos alinhados aos antebracos.", "Desca os halteres ao lado do peito, sem forcar os ombros alem de uma amplitude confortavel.", "Empurre os halteres de volta, expirando e mantendo o movimento controlado."],
+      "common_errors": ["Abrir demais os cotovelos ou dobrar os punhos.", "Levantar o quadril ou perder o apoio das costas.", "Usar impulso ou carga que dificulte controlar a descida."],
+      "safety_tips": ["Escolha uma carga que permita controlar todas as repeticoes.", "Peca ajuda para posicionar ou retirar cargas pesadas.", "Interrompa se sentir dor aguda. Na duvida, procure orientacao profissional."],
+      "alternatives": ["incline-barbell-press", "machine-chest-press", "dumbbell-bench-press"], "media": null, "is_active": true
+    },
+    {
+      "id": "squat", "name": "Agachamento com barra", "aliases": ["Agachamento livre"], "muscle_group": "Pernas", "type": "Barra",
+      "description": "Com a barra apoiada na parte superior das costas, flexione quadris e joelhos e retorne em pe sem perder o equilibrio.",
+      "primary_muscle": "Quadriceps", "secondary_muscles": ["Gluteos", "Adutores", "Musculos estabilizadores do tronco"],
+      "equipment": ["Barra", "Suporte com barras de seguranca"], "difficulty": "intermediate",
+      "instructions": ["Ajuste o suporte e as barras de seguranca antes de colocar a carga.", "Apoie a barra na parte superior das costas, nao no pescoco. Segure-a com firmeza.", "Afaste os pes em uma posicao confortavel e mantenha toda a planta apoiada.", "Flexione quadris e joelhos com controle, mantendo os joelhos na direcao dos pes.", "Desca apenas ate onde consegue manter apoio e controle do tronco.", "Empurre o chao e retorne em pe, estendendo quadris e joelhos juntos."],
+      "common_errors": ["Deixar os joelhos cederem para dentro.", "Levantar os calcanhares ou perder o equilibrio.", "Forcar profundidade ou carga sem manter o controle do tronco."],
+      "safety_tips": ["Aprenda o movimento com pouca carga e orientacao antes de progredir.", "Use suportes de seguranca ajustados para sua altura.", "Interrompa se sentir dor aguda. Na duvida, procure orientacao profissional."],
+      "alternatives": ["goblet-squat", "smith-squat", "hack-squat"], "media": null, "is_active": true
+    },
+    {
+      "id": "leg-press", "name": "Leg press", "muscle_group": "Pernas", "type": "Maquina",
+      "description": "Sentado e apoiado no equipamento, afaste a plataforma com os pes e retorne de forma controlada.",
+      "primary_muscle": "Quadriceps", "secondary_muscles": ["Gluteos", "Adutores"],
+      "equipment": ["Maquina"], "difficulty": "beginner",
+      "instructions": ["Ajuste o assento e confira as travas conforme as instrucoes do equipamento.", "Apoie as costas e o quadril. Coloque os pes inteiros sobre a plataforma.", "Destrave o equipamento com controle e sem perder os apoios.", "Flexione os joelhos na direcao dos pes, ate uma amplitude que mantenha o quadril apoiado.", "Empurre a plataforma sem dar trancos nem travar os joelhos.", "Ao terminar, recoloque as travas antes de sair."],
+      "common_errors": ["Retirar o quadril ou a lombar do encosto na descida.", "Travar os joelhos com forca no final do movimento.", "Empurrar os joelhos com as maos para completar a repeticao."],
+      "safety_tips": ["Confira como funcionam as travas antes de iniciar.", "Nao use uma amplitude que provoque perda de apoio ou desconforto.", "Interrompa se sentir dor aguda. Na duvida, procure orientacao profissional."],
+      "alternatives": ["hack-squat", "goblet-squat", "squat"], "media": null, "is_active": true
+    },
+    {
+      "id": "lat-pulldown", "name": "Puxada frontal", "muscle_group": "Costas", "type": "Maquina",
+      "description": "Sentado na polia, puxe a barra pela frente em direcao a parte superior do peito e retorne sem balancar o tronco.",
+      "primary_muscle": "Grande dorsal", "secondary_muscles": ["Biceps", "Romboides", "Trapezio"],
+      "equipment": ["Polia", "Barra de puxada"], "difficulty": "beginner",
+      "instructions": ["Ajuste o apoio das coxas e mantenha os pes firmes no chao.", "Segure a barra em uma largura confortavel e mantenha o tronco estavel, levemente inclinado para tras.", "Puxe os cotovelos para baixo, trazendo a barra pela frente em direcao ao peito.", "Evite elevar os ombros ou projetar a cabeca para encontrar a barra.", "Retorne os bracos com controle, sem soltar a carga bruscamente."],
+      "common_errors": ["Puxar a barra por tras da nuca.", "Balancar o corpo para vencer a carga.", "Encolher os ombros ou soltar a carga na subida."],
+      "safety_tips": ["Mantenha a barra pela frente e uma pegada confortavel.", "Reduza a carga se precisar balancar o corpo.", "Interrompa se sentir dor aguda. Na duvida, procure orientacao profissional."],
+      "alternatives": ["neutral-lat-pulldown", "underhand-lat-pulldown", "pull-up"], "media": null, "is_active": true
+    },
+    {
+      "id": "biceps-curl", "name": "Rosca direta", "muscle_group": "Biceps", "type": "Barra",
+      "description": "Em pe, flexione os cotovelos para elevar a barra e desca-a com controle, sem usar impulso do tronco.",
+      "primary_muscle": "Biceps braquial", "secondary_muscles": ["Braquial", "Braquiorradial"],
+      "equipment": ["Barra"], "difficulty": "beginner",
+      "instructions": ["Fique em pe, com pes firmes e joelhos confortavelmente destravados.", "Segure a barra com as palmas voltadas para a frente, em uma largura confortavel.", "Mantenha os cotovelos proximos ao tronco e os punhos alinhados.", "Flexione os cotovelos e eleve a barra sem balancar o corpo.", "Desca a barra com controle, sem forcar a extensao dos cotovelos."],
+      "common_errors": ["Usar impulso do quadril ou das costas.", "Levar os cotovelos muito a frente para levantar a carga.", "Dobrar os punhos ou soltar a barra na descida."],
+      "safety_tips": ["Escolha uma pegada que nao provoque desconforto nos punhos.", "Use uma carga que permita manter o tronco estavel.", "Interrompa se sentir dor aguda. Na duvida, procure orientacao profissional."],
+      "alternatives": ["alternating-dumbbell-curl", "cable-biceps-curl", "preacher-curl"], "media": null, "is_active": true
+    }
+  ]
+}

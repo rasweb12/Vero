@@ -6,6 +6,9 @@ const exerciseMuscleGroups = [
   'Pernas',
   'Ombros',
   'Bracos',
+  'Biceps',
+  'Triceps',
+  'Gluteos',
   'Abdomen',
   'Corpo inteiro',
   'Outros',
@@ -19,6 +22,9 @@ const exerciseEquipmentTypes = [
   'Peso corporal',
   'Elastico',
   'Kettlebell',
+  'Smith',
+  'Polia',
+  'Banco',
   'Outro',
 ];
 
@@ -457,10 +463,12 @@ const exerciseLibrary = [
 Exercicio exerciseById(
   String id, {
   Iterable<Exercicio> customExercises = const [],
+  Iterable<Exercicio> catalog = const [],
 }) =>
     [
-      ...exerciseLibrary,
       ...customExercises,
+      ...catalog,
+      ...exerciseLibrary,
     ].where((exercise) => exercise.id == id).firstOrNull ??
     Exercicio(
       id: id,
@@ -509,7 +517,27 @@ bool exerciseMatchesQuery(Exercicio exercise, String query) {
       ...exercise.aliases,
       exercise.muscleGroup,
       exercise.type,
+      ...exercise.equipmentNames,
     ].join(' '),
   );
   return normalizeExerciseText(query).split(' ').every(text.contains);
 }
+
+List<Exercicio> filterExercises(
+  Iterable<Exercicio> exercises, {
+  String query = '',
+  String? muscleGroup,
+  String? equipment,
+  ExerciseDifficulty? difficulty,
+  Set<String> excluded = const {},
+}) => exercises
+    .where(
+      (exercise) =>
+          exercise.isActive &&
+          !excluded.contains(exercise.id) &&
+          (muscleGroup == null || exercise.muscleGroup == muscleGroup) &&
+          (equipment == null || exercise.type == equipment || exercise.equipmentNames.contains(equipment)) &&
+          (difficulty == null || exercise.difficulty == difficulty) &&
+          exerciseMatchesQuery(exercise, query),
+    )
+    .toList(growable: false);

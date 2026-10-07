@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../domain/exercise_library.dart';
 import '../domain/training_models.dart';
+import 'exercise_detail_page.dart';
 import 'exercise_library_page.dart';
+import 'exercise_providers.dart';
 import 'training_controller.dart';
 import 'training_widgets.dart';
 
@@ -124,6 +126,8 @@ class _RoutineEditorState extends ConsumerState<_RoutineEditor> {
     final customExercises =
         ref.watch(trainingControllerProvider).asData?.value.customExercises ??
         const <Exercicio>[];
+    final catalog =
+        ref.watch(exerciseCatalogProvider).asData?.value ?? const <Exercicio>[];
     return PopScope(
       canPop: !_saving && !_dirty,
       onPopInvokedWithResult: (didPop, result) async {
@@ -237,8 +241,18 @@ class _RoutineEditorState extends ConsumerState<_RoutineEditor> {
                           exerciseById(
                             exercise.exerciseId,
                             customExercises: customExercises,
+                            catalog: catalog,
                           ).name,
                           style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Ver execucao',
+                        icon: const Icon(Icons.play_circle_outline),
+                        onPressed: () => openExerciseDetail(
+                          context,
+                            _exercises[exerciseIndex],
+                          restSeconds: _rest,
                         ),
                       ),
                       IconButton(

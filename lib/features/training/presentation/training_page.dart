@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../domain/exercise_library.dart';
 import '../domain/training_models.dart';
+import 'exercise_detail_page.dart';
+import 'exercise_providers.dart';
 import 'training_controller.dart';
 import 'training_widgets.dart';
 
@@ -139,16 +141,31 @@ class TrainingPage extends ConsumerWidget {
                     '${routine.exercises.length} exercicios · ${routine.exercises.fold<int>(0, (count, exercise) => count + exercise.sets.length)} series',
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    routine.exercises
-                        .map(
-                          (exercise) => exerciseById(
-                            exercise.exerciseId,
-                            customExercises: data.customExercises,
-                          ).name,
-                        )
-                        .join(', '),
-                  ),
+                  for (final exercise in routine.exercises)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        exerciseById(
+                          exercise.exerciseId,
+                          customExercises: data.customExercises,
+                          catalog:
+                              ref
+                                  .watch(exerciseCatalogProvider)
+                                  .asData
+                                  ?.value ??
+                              const <Exercicio>[],
+                        ).name,
+                      ),
+                      subtitle: Text(
+                        '${exercise.sets.length} series · ${exercise.sets.map((set) => set.reps).join(' / ')} reps',
+                      ),
+                      trailing: const Icon(Icons.play_circle_outline),
+                      onTap: () => openExerciseDetail(
+                        context,
+                        exercise,
+                        restSeconds: routine.restSeconds,
+                      ),
+                    ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.play_arrow),
@@ -284,6 +301,9 @@ class HistoryDetailPage extends ConsumerWidget {
                     exerciseById(
                       exercise.exerciseId,
                       customExercises: data.customExercises,
+                      catalog:
+                          ref.watch(exerciseCatalogProvider).asData?.value ??
+                          const <Exercicio>[],
                     ).name,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),

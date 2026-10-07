@@ -257,6 +257,11 @@ contem credenciais de SMTP. Veja o [guia oficial do Resend](https://resend.com/d
 
 ### Treinos offline
 
+Execucao visual, POC de cinco exercicios, formatos de midia, cache, cadastro de
+conteudo e deploy do catalogo: [guia da biblioteca](docs/exercise_library.md).
+Use Ver execucao na ficha ou durante o treino. As animacoes definitivas ainda
+estao em preparacao; instrucoes e seguranca ja funcionam offline.
+
 - A biblioteca inclui Peck deck (tambem encontrado como Pec deck ou voador),
   crucifixos, crossover, remadas, variacoes de agachamento e outros exercicios.
   A busca reconhece nomes alternativos e texto com ou sem acentos.

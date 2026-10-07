@@ -1,5 +1,18 @@
 import 'dart:math';
 
+import 'exercise_media.dart';
+
+enum ExerciseDifficulty { beginner, intermediate, advanced, unspecified }
+
+extension ExerciseDifficultyLabel on ExerciseDifficulty {
+  String get label => switch (this) {
+    ExerciseDifficulty.beginner => 'Iniciante',
+    ExerciseDifficulty.intermediate => 'Intermediario',
+    ExerciseDifficulty.advanced => 'Avancado',
+    ExerciseDifficulty.unspecified => 'Nao informada',
+  };
+}
+
 String newTrainingId() =>
     '${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}-${Random.secure().nextInt(1 << 32).toRadixString(36)}';
 
@@ -10,12 +23,39 @@ class Exercicio {
     required this.muscleGroup,
     required this.type,
     this.aliases = const [],
+    this.description = '',
+    this.primaryMuscle = '',
+    this.secondaryMuscles = const [],
+    this.equipment = const [],
+    this.difficulty = ExerciseDifficulty.unspecified,
+    this.instructions = const [],
+    this.commonErrors = const [],
+    this.safetyTips = const [],
+    this.alternatives = const [],
+    this.media,
+    this.isActive = true,
+    this.createdAt,
+    this.updatedAt,
   });
   final String id;
   final String name;
   final String muscleGroup;
   final String type;
   final List<String> aliases;
+  final String description;
+  final String primaryMuscle;
+  final List<String> secondaryMuscles;
+  final List<String> equipment;
+  final ExerciseDifficulty difficulty;
+  final List<String> instructions;
+  final List<String> commonErrors;
+  final List<String> safetyTips;
+  final List<String> alternatives;
+  final ExerciseMedia? media;
+  final bool isActive;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  List<String> get equipmentNames => equipment.isEmpty ? [type] : equipment;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -23,6 +63,19 @@ class Exercicio {
     'muscle_group': muscleGroup,
     'type': type,
     if (aliases.isNotEmpty) 'aliases': aliases,
+    'description': description,
+    'primary_muscle': primaryMuscle,
+    'secondary_muscles': secondaryMuscles,
+    'equipment': equipment,
+    'difficulty': difficulty.name,
+    'instructions': instructions,
+    'common_errors': commonErrors,
+    'safety_tips': safetyTips,
+    'alternatives': alternatives,
+    'media': media?.toJson(),
+    'is_active': isActive,
+    'created_at': createdAt?.toUtc().toIso8601String(),
+    'updated_at': updatedAt?.toUtc().toIso8601String(),
   };
 
   factory Exercicio.fromJson(Map<String, dynamic> json) => Exercicio(
@@ -31,6 +84,35 @@ class Exercicio {
     muscleGroup: json['muscle_group'] as String,
     type: json['type'] as String,
     aliases: List<String>.unmodifiable(json['aliases'] as List? ?? const []),
+    description: json['description'] as String? ?? '',
+    primaryMuscle: json['primary_muscle'] as String? ?? '',
+    secondaryMuscles: List<String>.unmodifiable(
+      json['secondary_muscles'] as List? ?? const [],
+    ),
+    equipment: List<String>.unmodifiable(
+      json['equipment'] as List? ?? const [],
+    ),
+    difficulty: ExerciseDifficulty.values.byName(
+      json['difficulty'] as String? ?? 'unspecified',
+    ),
+    instructions: List<String>.unmodifiable(
+      json['instructions'] as List? ?? const [],
+    ),
+    commonErrors: List<String>.unmodifiable(
+      json['common_errors'] as List? ?? const [],
+    ),
+    safetyTips: List<String>.unmodifiable(
+      json['safety_tips'] as List? ?? const [],
+    ),
+    alternatives: List<String>.unmodifiable(
+      json['alternatives'] as List? ?? const [],
+    ),
+    media: json['media'] == null
+        ? null
+        : ExerciseMedia.fromJson(json['media'] as Map<String, dynamic>),
+    isActive: json['is_active'] as bool? ?? true,
+    createdAt: DateTime.tryParse(json['created_at'] as String? ?? ''),
+    updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? ''),
   );
 }
 
@@ -58,19 +140,33 @@ class Serie {
 }
 
 class ExercicioTreino {
-  ExercicioTreino({required this.exerciseId, required List<Serie> sets})
-    : sets = List.unmodifiable(sets);
+  ExercicioTreino({
+    required this.exerciseId,
+    required List<Serie> sets,
+    this.intensityTechnique,
+    this.notes,
+  }) : sets = List.unmodifiable(sets);
   final String exerciseId;
   final List<Serie> sets;
-  ExercicioTreino withSets(List<Serie> value) =>
-      ExercicioTreino(exerciseId: exerciseId, sets: value);
+  final String? intensityTechnique;
+  final String? notes;
+  ExercicioTreino withSets(List<Serie> value) => ExercicioTreino(
+    exerciseId: exerciseId,
+    sets: value,
+    intensityTechnique: intensityTechnique,
+    notes: notes,
+  );
   Map<String, dynamic> toJson() => {
     'exercise_id': exerciseId,
     'sets': sets.map((value) => value.toJson()).toList(),
+    if (intensityTechnique != null) 'intensity_technique': intensityTechnique,
+    if (notes != null) 'notes': notes,
   };
   factory ExercicioTreino.fromJson(Map<String, dynamic> json) =>
       ExercicioTreino(
         exerciseId: json['exercise_id'] as String,
+        intensityTechnique: json['intensity_technique'] as String?,
+        notes: json['notes'] as String?,
         sets: (json['sets'] as List)
             .map((value) => Serie.fromJson(value as Map<String, dynamic>))
             .toList(),

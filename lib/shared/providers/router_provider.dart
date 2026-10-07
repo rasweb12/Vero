@@ -14,6 +14,8 @@ import '../../features/reports/presentation/reports_page.dart';
 import '../../features/settings/presentation/settings_page.dart';
 import '../../features/subscription/presentation/plans_page.dart';
 import '../../features/training/presentation/active_training_page.dart';
+import '../../features/training/presentation/exercise_animation_player.dart';
+import '../../features/training/presentation/exercise_detail_page.dart';
 import '../../features/training/presentation/exercise_library_page.dart';
 import '../../features/training/presentation/routine_editor_page.dart';
 import '../../features/training/presentation/training_page.dart';
@@ -37,6 +39,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefresh();
   ref.listen(authControllerProvider, (_, next) => refresh.refresh());
   final router = GoRouter(
+    observers: [exerciseRouteObserver],
     initialLocation: '/home',
     refreshListenable: refresh,
     redirect: (_, state) =>
@@ -137,6 +140,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/exercises',
         name: 'exercises',
         builder: (_, state) => const ExerciseLibraryPage(),
+      ),
+      GoRoute(
+        path: '/exercises/:id',
+        name: 'exercise-detail',
+        builder: (_, state) => ExerciseDetailPage(
+          id: state.pathParameters['id']!,
+          workout: state.extra is ExerciseDetailContext
+              ? state.extra as ExerciseDetailContext
+              : null,
+        ),
       ),
       GoRoute(
         path: '/plans',
