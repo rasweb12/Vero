@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../shared/utils/result.dart';
 import '../domain/auth_repository.dart';
+import 'supabase_auth_failure.dart';
 
 class SupabaseAuthRepository implements AuthRepository {
   const SupabaseAuthRepository(this.client);
+
   final SupabaseClient? client;
 
   @override
@@ -32,6 +35,7 @@ class SupabaseAuthRepository implements AuthRepository {
     Future<void> Function(SupabaseClient) action,
   ) async {
     final backend = client;
+
     if (backend == null) {
       return const Failure(
         AppFailure(
@@ -41,30 +45,29 @@ class SupabaseAuthRepository implements AuthRepository {
         ),
       );
     }
+
     try {
       await action(backend);
+
       return const Success(null);
     } on AuthException catch (error) {
-      final message = switch (error.code) {
-        'invalid_credentials' => 'Confira seu e-mail e sua senha.',
-        'email_not_confirmed' => 'Confirme seu e-mail antes de entrar.',
-        'user_already_exists' =>
-          'Nao foi possivel cadastrar. Tente entrar ou recuperar sua senha.',
-        'email_address_invalid' => 'Confira o endereco de e-mail informado.',
-        'email_provider_disabled' =>
-          'O cadastro por e-mail esta temporariamente indisponivel.',
-        'signup_disabled' =>
-          'Novos cadastros estao temporariamente indisponiveis.',
-        'weak_password' =>
-          'Escolha uma senha mais forte, com pelo menos 8 caracteres.',
-        'otp_expired' =>
-          'Codigo invalido ou expirado. Solicite outro e tente novamente.',
-        'over_email_send_rate_limit' || 'over_request_rate_limit' =>
-          'Aguarde alguns minutos antes de tentar novamente.',
-        _ => 'Nao foi possivel concluir. Confira os dados e tente novamente.',
-      };
-      return Failure(AppFailure(message: message, code: error.code));
-    } on Exception {
+      final failure = mapSupabaseAuthFailure(error);
+      if (kDebugMode) {
+        debugPrint(
+          'Supabase AuthException: '
+          'code=${failure.code ?? 'unknown'}, '
+          'status=${error.statusCode ?? 'unknown'}, '
+          'type=${error.runtimeType}, '
+          'message=${failure.message}',
+        );
+      }
+      return Failure(failure);
+    } on Exception catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Supabase exception: type=${error.runtimeType}');
+        debugPrintStack(stackTrace: stackTrace);
+      }
+
       return const Failure(
         AppFailure(
           message:

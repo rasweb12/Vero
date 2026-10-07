@@ -27,7 +27,7 @@ C:\develop\flutter\bin\flutter.bat pub run build_runner build --delete-conflicti
 C:\develop\flutter\bin\flutter.bat analyze
 C:\develop\flutter\bin\flutter.bat test
 C:\develop\flutter\bin\flutter.bat devices
-C:\develop\flutter\bin\flutter.bat run -d emulator-5554
+C:\develop\flutter\bin\flutter.bat run -d emulator-5554 --dart-define-from-file=config/supabase.json
 ```
 
 No Windows, builds com plugins podem exigir Developer Mode habilitado para suporte a symlinks.
@@ -38,7 +38,7 @@ Abra um emulador no Device Manager do Android Studio antes de executar. Substitu
 ### Instalar APK no emulador ou celular Android
 
 ```powershell
-flutter build apk --debug
+flutter build apk --debug --dart-define-from-file=config/supabase.json
 flutter install --debug -d emulator-5554
 ```
 
@@ -46,6 +46,31 @@ O APK fica em `build/app/outputs/flutter-apk/app-debug.apk`. Tambem pode ser
 arrastado para a janela do emulador. Para celular fisico, ative a depuracao USB,
 conecte o cabo, autorize o computador e use o ID listado em `flutter devices`.
 Este APK e de desenvolvimento, sem assinatura de distribuicao configurada.
+
+### APK release para testes
+
+```powershell
+.\tool\build_test_release.ps1 -CreateSigningKey
+```
+
+O comando usa `config/supabase.json` e gera `build/app/outputs/flutter-apk/app-release.apk`.
+`-CreateSigningKey` autoriza criar a primeira chave, mas nunca substitui uma chave
+existente. Nos proximos builds, execute o comando sem essa opcao. Para reutilizar
+as dependencias ja instaladas, adicione `-NoPub`.
+
+Guarde uma copia privada de `android/key.properties` e
+`android/app/vero-upload-keystore.jks`; ambos sao ignorados pelo Git. Essa
+assinatura e diferente da assinatura debug: exporte seus dados antes de remover
+a versao debug para instalar o release. O APK de testes nao comprova prontidao
+para a loja e nao elimina a necessidade de configurar e-mails publicos e compras.
+O build de publicacao continua usando `tool/build_release.ps1`.
+
+O arquivo `config/supabase.json` precisa existir antes do build. No Windows,
+`powershell -NoProfile -ExecutionPolicy Bypass -File tool/build_debug.ps1`
+valida esse arquivo e o inclui automaticamente no APK. Para executar diretamente,
+adicione `-Run -DeviceId emulator-5554`. O perfil `Vero (Supabase)` do VS Code
+tambem inclui a configuracao. O build Android recusa compilar sem os defines
+de conta, evitando distribuir um APK com cadastro e login indisponiveis.
 
 Android e o alvo validado nesta sprint. iOS exige macOS/Xcode e validacao propria;
 web nao e suportada pela inicializacao segura atual.
@@ -189,15 +214,15 @@ flutter run -d emulator-5554 --dart-define-from-file=config/supabase.json
 flutter build apk --debug --dart-define-from-file=config/supabase.json
 ```
 
-Sem configuracao, o app abre a tela de login com o servico indisponivel. Nao ha
-login ficticio nem criacao silenciosa de contas. O fluxo usa codigo digitado no
+O build Android exige a configuracao de conta. O fluxo usa codigo digitado no
 app, nao deep links; por isso os modelos de e-mail acima sao necessarios.
 Referencias: [templates de e-mail](https://supabase.com/docs/guides/auth/auth-email-templates)
 e [verificacao OTP](https://supabase.com/docs/reference/dart/auth-verifyotp).
 
-Se os botoes de Entrar, Criar conta ou Recuperar senha aparecerem desativados,
-o APK foi aberto sem essas duas variaveis. Copie o exemplo, preencha a URL e a
-chave publica do projeto e execute novamente com `--dart-define-from-file`:
+Se um APK antigo mostrar "Nao foi possivel conectar ao servico de conta",
+ele pode ter sido compilado sem os defines do Supabase. Incluir o arquivo no
+repositorio local nao altera um APK ja instalado: gere e instale um novo APK.
+Em uma instalacao nova do projeto, preencha o arquivo local seguindo o exemplo:
 
 ```powershell
 Copy-Item config/supabase.example.json config/supabase.json
@@ -205,9 +230,15 @@ notepad config/supabase.json
 flutter run -d emulator-5554 --dart-define-from-file=config/supabase.json
 ```
 
-Nunca use `service_role` no JSON. O app nao pode habilitar uma conta real sem
-um projeto Supabase configurado; a mensagem na tela agora informa exatamente
-quais defines estao ausentes ou invalidos.
+Nunca use `service_role` no JSON. A configuracao fica no build; o usuario final
+nao precisa informar a URL ou a chave do projeto.
+
+Se Auth retornar `Error sending confirmation email`, o servidor falhou ao enviar
+a mensagem. Confira o erro detalhado em Supabase > Logs > Auth e no painel de
+envios do Resend. O app traduz esse caso como falha de envio, inclusive quando
+GoTrue entrega o JSON de um HTTP 500 dentro de uma excecao sem `code`.
+Configurar o SMTP e o dominio remetente acontece no Supabase/Resend; o APK nao
+contem credenciais de SMTP. Veja o [guia oficial do Resend](https://resend.com/docs/send-with-supabase-smtp).
 
 ### Conta e perfil
 
@@ -226,6 +257,18 @@ quais defines estao ausentes ou invalidos.
 
 ### Treinos offline
 
+- A biblioteca inclui Peck deck (tambem encontrado como Pec deck ou voador),
+  crucifixos, crossover, remadas, variacoes de agachamento e outros exercicios.
+  A busca reconhece nomes alternativos e texto com ou sem acentos.
+- Em Treinos > Biblioteca, o botao `+` abre o cadastro de exercicio personalizado
+  com nome, grupo muscular e equipamento. No editor, Adicionar exercicio > `+`
+  permite criar e incluir o novo exercicio diretamente na rotina.
+- Os personalizados funcionam offline, ficam cifrados com os treinos e sao
+  separados por conta. Nao exigem Premium. Tambem seguem no backup e na exportacao
+  dos dados de treino. Nomes duplicados no mesmo grupo/equipamento sao recusados.
+- O formato local de treinos agora usa a versao 2; dados anteriores da versao 1
+  continuam legiveis. Aplicativos antigos nao leem esse formato, portanto nao
+  instale uma versao anterior depois de salvar treinos na versao nova.
 - `Treino`: ID, nome, exercicios e segundos de repouso.
 - `Exercicio`: ID estavel, nome, grupo muscular e tipo/equipamento.
 - `Serie`: repeticoes, carga em kg e conclusao.

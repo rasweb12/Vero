@@ -9,11 +9,29 @@ class Exercicio {
     required this.name,
     required this.muscleGroup,
     required this.type,
+    this.aliases = const [],
   });
   final String id;
   final String name;
   final String muscleGroup;
   final String type;
+  final List<String> aliases;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'muscle_group': muscleGroup,
+    'type': type,
+    if (aliases.isNotEmpty) 'aliases': aliases,
+  };
+
+  factory Exercicio.fromJson(Map<String, dynamic> json) => Exercicio(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    muscleGroup: json['muscle_group'] as String,
+    type: json['type'] as String,
+    aliases: List<String>.unmodifiable(json['aliases'] as List? ?? const []),
+  );
 }
 
 class Serie {
@@ -136,23 +154,45 @@ class TrainingData {
   TrainingData({
     List<Treino> routines = const [],
     List<TrainingSession> history = const [],
+    List<Exercicio> customExercises = const [],
     this.active,
   }) : routines = List.unmodifiable(routines),
-       history = List.unmodifiable(history);
+       history = List.unmodifiable(history),
+       customExercises = List.unmodifiable(customExercises);
   final List<Treino> routines;
   final List<TrainingSession> history;
+  final List<Exercicio> customExercises;
   final TrainingSession? active;
+
+  TrainingData copyWith({
+    List<Treino>? routines,
+    List<TrainingSession>? history,
+    List<Exercicio>? customExercises,
+    TrainingSession? active,
+    bool clearActive = false,
+  }) => TrainingData(
+    routines: routines ?? this.routines,
+    history: history ?? this.history,
+    customExercises: customExercises ?? this.customExercises,
+    active: clearActive ? null : active ?? this.active,
+  );
+
   Map<String, dynamic> toJson() => {
-    'version': 1,
+    'version': 2,
     'routines': routines.map((value) => value.toJson()).toList(),
     'history': history.map((value) => value.toJson()).toList(),
+    'custom_exercises': customExercises.map((value) => value.toJson()).toList(),
     'active': active?.toJson(),
   };
   factory TrainingData.fromJson(Map<String, dynamic> json) {
-    if (json['version'] != 1) {
+    // Read existing workouts, but do not let older apps overwrite the new catalog.
+    if (json['version'] != 1 && json['version'] != 2) {
       throw const FormatException('Unsupported training data version.');
     }
     return TrainingData(
+      customExercises: (json['custom_exercises'] as List? ?? const [])
+          .map((value) => Exercicio.fromJson(value as Map<String, dynamic>))
+          .toList(),
       routines: (json['routines'] as List)
           .map((value) => Treino.fromJson(value as Map<String, dynamic>))
           .toList(),

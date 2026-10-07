@@ -23,8 +23,41 @@ foreach ($key in $required) {
   }
 }
 
+if ($config.SUPABASE_ANON_KEY -match "service_role|sb_secret_") {
+  throw "SUPABASE_ANON_KEY nao pode ser uma chave de servidor. Use a chave publica anon/publishable."
+}
+
+$supabaseUri = $null
+if (-not [Uri]::TryCreate($config.SUPABASE_URL, [UriKind]::Absolute, [ref]$supabaseUri) -or
+    $supabaseUri.Scheme -ne "https" -or
+    [string]::IsNullOrWhiteSpace($supabaseUri.Host)) {
+  throw "SUPABASE_URL deve ser uma URL HTTPS valida."
+}
+
+$feedbackUri = $null
+if (-not [Uri]::TryCreate($config.VERO_FEEDBACK_URL, [UriKind]::Absolute, [ref]$feedbackUri) -or
+    $feedbackUri.Scheme -notin @("http", "https")) {
+  throw "VERO_FEEDBACK_URL deve ser uma URL HTTP ou HTTPS valida."
+}
+
 if (-not (Test-Path -LiteralPath "android/key.properties")) {
   throw "Assinatura ausente: configure android/key.properties antes do build de producao."
+}
+
+$keystoreProperties = Get-Content -Raw -LiteralPath "android/key.properties" |
+  ConvertFrom-StringData
+$storeFile = $keystoreProperties.storeFile
+if ([string]::IsNullOrWhiteSpace($storeFile)) {
+  throw "android/key.properties precisa informar storeFile."
+}
+
+$storeFilePath = if ([IO.Path]::IsPathRooted($storeFile)) {
+  $storeFile
+} else {
+  Join-Path (Get-Location) $storeFile
+}
+if (-not (Test-Path -LiteralPath $storeFilePath -PathType Leaf)) {
+  throw "Arquivo de assinatura nao encontrado: $storeFilePath"
 }
 
 & flutter build appbundle --release --dart-define-from-file=$ConfigPath

@@ -78,7 +78,10 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
             routine.exercises.length ||
         routine.exercises.any(
           (exercise) =>
-              !exerciseLibrary.any((item) => item.id == exercise.exerciseId) ||
+              ![
+                ...exerciseLibrary,
+                ...data.customExercises,
+              ].any((item) => item.id == exercise.exerciseId) ||
               exercise.sets.isEmpty ||
               exercise.sets.length > 20 ||
               exercise.sets.any(
@@ -103,21 +106,13 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
     } else {
       routines[index] = routine;
     }
-    return Success(
-      TrainingData(
-        routines: routines,
-        history: data.history,
-        active: data.active,
-      ),
-    );
+    return Success(data.copyWith(routines: routines));
   });
 
   Future<Result<void>> deleteRoutine(String id) => _change(
     (data) => Success(
-      TrainingData(
+      data.copyWith(
         routines: data.routines.where((routine) => routine.id != id).toList(),
-        history: data.history,
-        active: data.active,
       ),
     ),
   );
@@ -133,9 +128,7 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
       return const Failure(AppFailure(message: 'Treino nao encontrado.'));
     }
     return Success(
-      TrainingData(
-        routines: data.routines,
-        history: data.history,
+      data.copyWith(
         active: TrainingSession(
           id: newTrainingId(),
           routine: routine,
@@ -180,9 +173,7 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
         ? DateTime.now().add(Duration(seconds: active.routine.restSeconds))
         : active.restEndsAt;
     return Success(
-      TrainingData(
-        routines: data.routines,
-        history: data.history,
+      data.copyWith(
         active: TrainingSession(
           id: active.id,
           startedAt: active.startedAt,
@@ -202,9 +193,7 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
     final active = data.active;
     if (active == null) return Success(data);
     return Success(
-      TrainingData(
-        routines: data.routines,
-        history: data.history,
+      data.copyWith(
         active: TrainingSession(
           id: active.id,
           routine: active.routine,
@@ -222,8 +211,8 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
       );
     }
     return Success(
-      TrainingData(
-        routines: data.routines,
+      data.copyWith(
+        clearActive: true,
         history: [
           ...data.history,
           TrainingSession(
@@ -237,8 +226,52 @@ class TrainingController extends StateNotifier<AsyncValue<TrainingData>> {
     );
   });
 
-  Future<Result<void>> discard() => _change(
-    (data) =>
-        Success(TrainingData(routines: data.routines, history: data.history)),
-  );
+  Future<Result<void>> discard() =>
+      _change((data) => Success(data.copyWith(clearActive: true)));
+
+  Future<Result<void>> saveCustomExercise(Exercicio exercise) => _change((
+    data,
+  ) {
+    final name = exercise.name.trim();
+    if (!RegExp(r'^custom-[a-z0-9-]{1,80}$').hasMatch(exercise.id) ||
+        name.isEmpty ||
+        name.length > 80 ||
+        RegExp(r'[\x00-\x1f\x7f]').hasMatch(name) ||
+        !exerciseMuscleGroups.contains(exercise.muscleGroup) ||
+        !exerciseEquipmentTypes.contains(exercise.type)) {
+      return const Failure(
+        AppFailure(
+          message: 'Confira o nome, o grupo muscular e o equipamento.',
+        ),
+      );
+    }
+    final catalog = [...exerciseLibrary, ...data.customExercises];
+    if (catalog.any(
+      (item) =>
+          item.id == exercise.id ||
+          (item.muscleGroup == exercise.muscleGroup &&
+              item.type == exercise.type &&
+              [item.name, ...item.aliases].any(
+                (label) =>
+                    normalizeExerciseText(label) == normalizeExerciseText(name),
+              )),
+    )) {
+      return const Failure(
+        AppFailure(message: 'Este exercicio ja esta na biblioteca.'),
+      );
+    }
+    return Success(
+      data.copyWith(
+        customExercises: [
+          ...data.customExercises,
+          Exercicio(
+            id: exercise.id,
+            name: name,
+            muscleGroup: exercise.muscleGroup,
+            type: exercise.type,
+          ),
+        ],
+      ),
+    );
+  });
 }

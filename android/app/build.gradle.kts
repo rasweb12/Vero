@@ -1,4 +1,6 @@
 import java.io.FileInputStream
+import java.net.URI
+import java.util.Base64
 import java.util.Properties
 
 plugins {
@@ -48,12 +50,8 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                // Local release runs remain possible; the release script refuses
-                // to create a store artifact without a real key.
-                signingConfigs.getByName("debug")
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
             }
         }
     }
@@ -71,4 +69,35 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+// The account configuration must reach the Dart compiler, not just exist on disk.
+val encodedDartDefines = providers.gradleProperty("dart-defines").orElse("")
+val verifyAccountConfiguration = tasks.register("verifyAccountConfiguration") {
+    doLast {
+        val defines = encodedDartDefines.get().split(',').filter { it.isNotBlank() }.associate {
+            val decoded = String(Base64.getDecoder().decode(it), Charsets.UTF_8)
+            val parts = decoded.split('=', limit = 2)
+            parts[0] to parts.getOrElse(1) { "" }
+        }
+        val url = defines["SUPABASE_URL"].orEmpty()
+        val key = defines["SUPABASE_ANON_KEY"].orEmpty()
+        val uri = runCatching { URI(url) }.getOrNull()
+        if (uri?.scheme != "https" || uri?.host.isNullOrBlank() ||
+            url.contains("YOUR_PROJECT") || key.length < 20 ||
+            key.contains("YOUR_PUBLIC") || key.contains("service_role", ignoreCase = true) ||
+            key.startsWith("sb_secret_", ignoreCase = true)
+        ) {
+            throw GradleException(
+                "Vero: configuracao de conta ausente ou invalida no build. " +
+                    "Use --dart-define-from-file=config/supabase.json " +
+                    "(ou config/release.json para publicacao)."
+            )
+        }
+    }
+}
+tasks.configureEach {
+    if (name.startsWith("compileFlutterBuild")) {
+        dependsOn(verifyAccountConfiguration)
+    }
 }

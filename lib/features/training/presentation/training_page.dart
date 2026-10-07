@@ -142,7 +142,10 @@ class TrainingPage extends ConsumerWidget {
                   Text(
                     routine.exercises
                         .map(
-                          (exercise) => exerciseById(exercise.exerciseId).name,
+                          (exercise) => exerciseById(
+                            exercise.exerciseId,
+                            customExercises: data.customExercises,
+                          ).name,
                         )
                         .join(', '),
                   ),
@@ -278,7 +281,10 @@ class HistoryDetailPage extends ConsumerWidget {
                 const SizedBox(height: 24),
                 for (final exercise in session.routine.exercises) ...[
                   Text(
-                    exerciseById(exercise.exerciseId).name,
+                    exerciseById(
+                      exercise.exerciseId,
+                      customExercises: data.customExercises,
+                    ).name,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   for (final (index, set) in exercise.sets.indexed)

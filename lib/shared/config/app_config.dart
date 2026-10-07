@@ -8,11 +8,17 @@ class AppConfig {
 
   static bool get hasSupabaseCredentials {
     final uri = Uri.tryParse(supabaseUrl);
+    final normalizedKey = supabaseAnonKey.toLowerCase();
+    final looksLikeServerSecret =
+        normalizedKey.contains('service_role') ||
+        normalizedKey.startsWith('sb_secret_');
     return uri != null &&
         uri.hasScheme &&
+        uri.scheme == 'https' &&
         uri.host.isNotEmpty &&
         supabaseAnonKey.length >= 20 &&
         !supabaseUrl.contains('YOUR_PROJECT') &&
-        !supabaseAnonKey.contains('YOUR_PUBLIC');
+        !supabaseAnonKey.contains('YOUR_PUBLIC') &&
+        !looksLikeServerSecret;
   }
 }

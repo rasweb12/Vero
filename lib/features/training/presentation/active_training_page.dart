@@ -225,7 +225,10 @@ class _ActiveTrainingPageState extends ConsumerState<ActiveTrainingPage> {
                         for (final (exerciseIndex, exercise)
                             in session.routine.exercises.indexed) ...[
                           Text(
-                            exerciseById(exercise.exerciseId).name,
+                            exerciseById(
+                              exercise.exerciseId,
+                              customExercises: data.customExercises,
+                            ).name,
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           const SizedBox(height: 12),
